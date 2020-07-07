@@ -87,7 +87,7 @@ class Programm():
 
 		self.list_box_2.grid(row = 5 ,column = 2, sticky = tk.W+tk.E)
 
-		self.dirs.insert(0,'Выберите файл')
+		self.dirs.insert(0,'Выберите файлы')
 		self.url.insert(0,'http://httpbin.org/post')
 		
 		self.list_box_2.bind("<<ListboxSelect>>", self.test)
