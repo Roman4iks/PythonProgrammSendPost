@@ -254,6 +254,7 @@ class Programm():
 		files_data = []
 
 		data_box = {}
+		self.list_box.delete(0, tk.END)
 		data_all = self.list_box_2.get(0, tk.END)
 		
 		if data_all == ():
@@ -309,6 +310,8 @@ class Programm():
 
 		files_data = []
 		files_dates = {}
+
+		self.list_box.delete(0, tk.END)
 
 		data_all = self.list_box_2.get(0, tk.END)
 		
