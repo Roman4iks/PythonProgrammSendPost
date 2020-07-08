@@ -58,6 +58,7 @@ class Programm():
 		self.data_value = tk.Entry(width = 20, textvariable = self.data_valueTextEntry)
 
 		self.button_files_dir = tk.Button(root, text = "...", command =self.file_dir)
+		self.button_files_add = tk.Button(root, text = "Добавить файл", command =self.file_add)
 		self.button_data_add = tk.Button(root, text = "Добавить", command =self.data_add)
 		self.button_data_edit = tk.Button(root, text = "Изменить", command =self.data_edit)
 		self.button_data_delete = tk.Button(root, text = "Удалить", command =self.data_delete)
@@ -85,44 +86,115 @@ class Programm():
 		self.button_data_add.grid(row = 2, column = 2, columnspan = 1)
 		self.button_data_delete.grid(row = 2, column = 2, columnspan = 3)
 		self.button_files_dir.grid(row = 3, column = 3)
+		self.button_files_add.grid(row = 4, column = 3)
 	
 		self.list_box_2.grid(row = 5 ,column = 2, sticky = tk.W+tk.E)
 
 		self.dirs.insert(0,'Выберите файл')
 		self.url.insert(0,'http://httpbin.org/post')
 		
-		self.list_box_2.bind("<<ListboxSelect>>")
+		self.list_box_2.bind("<<ListboxSelect>>", self.focusbox)
 		
-	
+	def focusbox(self,get):
+		cursor = self.list_box_2.curselection()
+		data_all = self.list_box_2.get(cursor, cursor)
+		for data in data_all:
+			data_key = data.split(' : ')[0]
+			data_value = data.split(' : ')[1]
+
+			if data_key == "file":
+				data_name = data_value.split(" --> ")[0]
+				data_dir = data_value.split(" --> ")[1]
+				
+				self.dirs.delete(0, tk.END)
+				self.name.delete(0, tk.END)
+
+				self.dirs.insert(0, data_dir)
+				self.name.insert(0, data_name)
+			else:
+				self.data.insert(0, data_key)
+				self.data_valeu.insert(0, data_value)
+
+
 	def file_dir(self):
 		file = filedialog.askopenfilename()
 		
 		self.dirs.delete(0, tk.END)
+		self.name.delete(0, tk.END)
+
 		self.dirs.insert(0, f"{file}")
+		self.name.insert(0, f"{file.split('/')[-1]}")
+
+
+	def Check_key(self):
+
+		data_key1 = self.data.get()
+
+		data = self.list_box_2.get(0, tk.END)
+
+		for data_key_value in data:
+			data_key2 = data_key_value.split(' : ')[0]
+			if data_key1 == data_key2:
+				self.L1['text'] = "Ошибка Такие данные уже есть в таблице пожалуйста введите другое название"
+				return 1
+
+	def file_add(self):
+		file = self.dirs.get()
+		name = self.name.get()
+
+		self.dirs.delete(0, tk.END)
+		self.name.delete(0, tk.END)
+
+		if name != "":
+			self.list_box_2.insert(0, f'file : {name} --> {file}')
+		else:
+			if file == "" or file == "Выберите файл":
+				self.L1['text'] = "Ошибка Выберите файл пожалуйста"
+				return
+			else:
+				self.list_box_2.insert(0, f'file : {file.split("/")[-1]} --> {file}')
 
 	def data_add(self):
 		data = self.data.get()
 		data_value = self.data_value.get()
-		file = self.dirs.get()
-		name = self.name.get()
 
-		if name != "":
-			self.list_box_2.insert(0, f'file : {name} --> {file}')
+		self.data.delete(0, tk.END)
+		self.data_value.delete(0, tk.END)
+
+		check = self.Check_key()
+
+		if check == 1:
+			return
+
 		if data == "" and data_value == "":
-			pass
+			self.L1['text'] = "Ошибка Введите данные"
+			return
+		if data == "" and data_value != "":
+			self.L1['text'] = "Ошибка Введите данные в первое поле ввода"
+			return
 		else:
 			if data == '':
 				self.list_box_2.insert(0, f'{data} : ""')
 			else:
 				self.list_box_2.insert(0, f'{data} : {data_value}')
-	def data_edit(self):
-		data = self.data.get()
-		data_value = self.data_value.get()
-		
-		index = self.list_box_2.curselection()
 
-		self.list_box_2.delete(index, index)
-		self.list_box_2.insert(0, f'{data} : {data_value}')
+	def data_edit(self):
+		index = self.list_box_2.curselection()
+		data = self.list_box_2.get(index, index)[0]
+		key = data.split(' : ')[0]
+
+		if key == "file":
+			dirs = self.dirs.get()
+			name = self.name.get()
+
+			self.list_box_2.delete(index, index)
+			self.list_box_2.insert(index, f"file : {name} --> {dirs}")
+		else:
+			data = self.data.get()
+			data_value = self.data_value.get()
+
+			self.list_box_2.delete(index, index)
+			self.list_box_2.insert(index, f'{data} : {data_value}')
 
 	def data_delete(self):
 		cursor_data = self.list_box_2.curselection()
@@ -135,12 +207,18 @@ class Programm():
 	def send_POST(self):
 		url = self.url.get()
 		
-		files = {}
+		files_dates = {}
 		files_data = []
 
 		data_box = {}
+		data_all = self.list_box_2.get(0, tk.END)
+		
+		if data_all == ():
+			self.L1['text'] = "Ошибка Пожалуйста добавте данные для POST запроса"
+			return
 
-		for data in self.list_box_2.get(0, tk.END):
+
+		for data in data_all:
 			data_key = data.split(" : ")[0]
 			data_value = data.split(" : ")[1]
 			if data_key == "file":
@@ -155,13 +233,19 @@ class Programm():
 				else:
 					data_box[data_key] = data_value
 
-		s = requests.post(url, data = data_box, json = data_box, files = files_dates if files_dates != "" else None)
+		if data_box == {}:
+			data_box = None
+
+		if files_dates == {}:
+			files_dates = None
+
+		s = requests.post(url, data = data_box, json = data_box, files = files_dates)
 		log = s.text
 
 		try:
 			json_data = json.loads(log)
 		except json.decoder.JSONDecodeError:
-			self.L1['text'] = "Ошибка POST JSON данные не получены"
+			self.L1['text'] = "Ошибка POST запроса ответа некоректный"
 			return 
 
 		list_box = tk.Listbox()
@@ -184,11 +268,16 @@ class Programm():
 
 		data_box = {}
 
-
-		files_data = {}
 		files_data = []
+		files_dates = {}
 
-		for data in self.list_box_2.get(0, tk.END):
+		data_all = self.list_box_2.get(0, tk.END)
+		
+		if data_all == ():
+			self.L1['text'] = "Ошибка Пожалуйста добавте данные для GET запроса"
+			return
+
+		for data in data_all:
 			data_key = data.split(" : ")[0]
 			data_value = data.split(" : ")[1]
 			if data_key == "file":
@@ -202,13 +291,20 @@ class Programm():
 					data_box[data_key] = ""
 				else:
 					data_box[data_key] = data_value
+
+		if data_box == {}:
+			data_box = None
+
+		if files_dates == {}:
+			files_dates = None
+
 		s = requests.get(url, params = data_box, files = files_dates)
 		log = s.text
 
 		try:
 			json_data = json.loads(log)
 		except json.decoder.JSONDecodeError:
-			self.L1['text'] = "Ошибка GET JSON данные не получены"
+			self.L1['text'] = "Ошибка GET запроса ответа некоректный"
 			return 
 
 		list_box = tk.Listbox()
