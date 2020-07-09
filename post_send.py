@@ -7,17 +7,6 @@ import pyperclip
 
 root = tk.Tk()
 root.title("MyFirstProgramm")
-menu = Menu(root)
-menu.add_command(label='File')
-root.config(menu=menu)
-new_item = Menu(menu)
-new_item.add_command(label='Новое')
-menu.add_cascade(label='Файл', menu=new_item)
-new_item.add_separator()
-new_item.add_command(label='Редактирование')
-
-
-
 
 #file = filedialog.askopenfilename()
 #print(file)
@@ -93,7 +82,7 @@ class Programm():
 		self.list_box_2.grid(row = 5 ,column = 2, sticky = tk.W+tk.E)
 
 		self.dirs.insert(0,'Выберите файл')
-		self.url.insert(0,'http://httpbin.org/post')
+		self.url.insert(0,'http://httpbin.org/post') # https://truecoding.ru/guild/pvp2.php
 		
 		self.list_box_2.bind("<<ListboxSelect>>", self.focusbox)
 		root.protocol("WM_DELETE_WINDOW", self.save_session)
@@ -127,11 +116,11 @@ class Programm():
 						self.data_value.insert(0, data_value_data)
 					elif data_json == "listbox":
 						self.list_box.delete(0, tk.END)
-						for data_list in json_data[data_json]:
+						for data_list in json_data[data_json][::-1]:
 							self.list_box.insert(0, data_list)
 					elif data_json == "listbox2":
 						self.list_box_2.delete(0, tk.END)
-						for data_list in json_data[data_json]:
+						for data_list in json_data[data_json][::-1]:
 							self.list_box_2.insert(0, data_list)
 		except json.decoder.JSONDecodeError:
 			pass
@@ -382,7 +371,6 @@ class Programm():
 		data_value = self.data_value.get()
 		data_listbox1 = self.list_box.get(0, tk.END)
 		data_listbox2 = self.list_box_2.get(0, tk.END)
-			
 
 		if data == "":
 			data = None
