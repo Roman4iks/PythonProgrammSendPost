@@ -1,3 +1,3 @@
-url : http://httpbin.org/t
+url : http://truecoding/cim
 file_name : test
 SendPethod : 0

@@ -75,10 +75,12 @@ class MyApp:
 			options_file.close()
 
 	def send(self):
+		self.loadoptions()
 		dir_file = self.entry_dir.get()
 		name_file = self.file_name
 		url = self.url
 		selected = self.selected
+		print(url)
 
 		if name_file == "":
 			name_file = self.entry_dir.get().split('/')[-1]
