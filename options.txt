@@ -1,3 +1,4 @@
-url : http://truecoding/cim
-file_name : test
+url : http://httpbin.org/post
+file_name : test.txt
 SendPethod : 0
+dir_file : D:

@@ -45,17 +45,21 @@ class MyApp:
 
 		file.close()
 		self.file_name = ""
+		self.dir_files = ""
 		self.loadoptions()
 		root.protocol('WM_TAKE_FOCUS', self.loadoptions)
+		self.entry_dir.insert(0, self.dir_files)
 	
 	def loadoptions(self, lo = None):
-		if open("options.txt", "r").read() == "":
-			options_file = open("options.txt", "w")
-			options_file.write("url : http://httpbin.org/post\n")
-			options_file.write("file_name : test.txt\n")
-			options_file.write("SendPethod : 0\n")
-			options_file.close()
 		try:
+			if open("options.txt", "r").read() == "":
+				options_file = open("options.txt", "w")
+				options_file.write("url : http://httpbin.org/post\n")
+				options_file.write("file_name : test.txt\n")
+				options_file.write("SendPethod : 0\n")
+				options_file.write("dir_file : D:\n")
+				options_file.close()
+
 			options_file = open("options.txt", "r").read().split('\n')
 			options_file.pop()
 			for option in options_file:
@@ -67,11 +71,15 @@ class MyApp:
 					self.file_name = option_values[1]
 				if option_values[0] == "SendPethod":
 					self.selected = option_values[1]
+				if option_values[0] == "dir_file":
+					self.dir_files = option_values[1]
+
 		except FileNotFoundError:
 			options_file = open("options.txt", "w")
 			options_file.write("url : http://httpbin.org/post\n")
 			options_file.write("file_name : test.txt\n")
 			options_file.write("SendPethod : 0\n")
+			options_file.write("dir_file : D:\n")
 			options_file.close()
 
 	def send(self):
@@ -80,7 +88,9 @@ class MyApp:
 		name_file = self.file_name
 		url = self.url
 		selected = self.selected
-		print(url)
+
+		if len(url.split('://')) >= 1:
+			url = f"http://{url}"
 
 		if name_file == "":
 			name_file = self.entry_dir.get().split('/')[-1]
@@ -94,15 +104,33 @@ class MyApp:
 			tk.messagebox.showerror('Ошибка', f'Выберите файл!')
 			return
 		except FileNotFoundError:
-			tk.messagebox.showerror('Ошибка', f'файл не найден!')
+			tk.messagebox.showerror('Ошибка', f'Файл не найден!')
 			return
 
 		if int(self.selected) == 1:
-			data_url = requests.get(url, files = file)
+			try:
+				data_url = requests.get(url, files = file)
+			except requests.exceptions.MissingSchema:
+				tk.messagebox.showerror('Ошибка', f'Некоректный ввод ссылки')
+				return
+			except requests.exceptions.ConnectionError:
+				tk.messagebox.showerror('Ошибка', f'Ошибка соединеня')
+				return
+			except:
+				tk.messagebox.showerror('Ошибка', f'Неизвестная ошибка')
+				return
 		elif int(self.selected) == 0:
-			data_url = requests.post(url, files = file)
-
-
+			try:	
+				data_url = requests.post(url, files = file)
+			except requests.exceptions.MissingSchema:
+				tk.messagebox.showerror('Ошибка', f'Некоректный ввод ссылки')
+				return
+			except requests.exceptions.ConnectionError:
+				tk.messagebox.showerror('Ошибка', f'Ошибка соединеня')
+				return
+			except:
+				tk.messagebox.showerror('Ошибка', f'Неизвестная ошибка')
+				return
 		data = data_url.text
 
 		self.console.delete(1.0, tk.END)
@@ -172,6 +200,8 @@ class Options:
 				self.url_options = option_values[1]
 			if option_values[0] == "file_name":
 				self.file_name = option_values[1]
+			if option_values[0] == "dir_file":
+				self.dir_files = option_values[1]
 		
 		if self.url_options == "":
 			self.url.insert(0, "http://httpbin.org/post")
@@ -182,7 +212,6 @@ class Options:
 			self.Entry_Name.insert(0, dir_file.get().split('/')[-1])
 		else:
 			self.Entry_Name.insert(0, self.file_name)
-
 	def Accept(self):
 		url = self.url.get()
 		file_name = self.Entry_Name.get()
@@ -191,6 +220,7 @@ class Options:
 		file.write(f'url : {url}\n')
 		file.write(f'file_name : {file_name}\n')
 		file.write(f'SendPethod : {selected}\n')
+		file.write(f'dir_file : {self.dir_file}\n')
 		file.close()
 		close = True
 		return url, close, file_name, self.window.destroy() 
