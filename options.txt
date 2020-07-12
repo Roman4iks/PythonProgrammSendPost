@@ -1,4 +1,4 @@
-url : http://httpbin.org/post
+url : http://httpbin.org/get
 file_name : test.txt
 SendPethod : 0
-dir_file : D:
+dir_file : D:/Важное/Программирование/PythonCode/Programs/PostSend/PythonProgrammSendPost/Test.txt
